@@ -1,0 +1,32 @@
+name: CI Pipeline
+
+# 觸發條件：當你 push 到 master (或 main) 分支，或者開 Pull Request 時觸發
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 虛擬機
+
+    steps:
+      # 1. 把你的程式碼抓到虛擬機裡
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 設定 Node.js 環境
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24" # 請對應你的 Node 版本
+          cache: "npm" # 如果你用 npm，可以快取加速
+
+      # 3. 安裝相依套件 (如果專案有 package-lock.json 就用 npm ci)
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 執行建置指令（對應你的 package.json 裡的 build 腳本）
+      - name: Build project
+        run: npm run build

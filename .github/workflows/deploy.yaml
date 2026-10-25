@@ -1,0 +1,55 @@
+name: Deploy React Router SPA to GitHub Pages
+
+# 觸發條件：當你 push 到 master 分支時自動執行
+on:
+  push:
+    branches: ["master"]
+
+# 設定 GITHUB_TOKEN 的權限，允許 Actions 進行部署
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 確保同時只會有一個部署任務在跑
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 抓取你的程式碼
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 設定 Node.js 環境
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      # 3. 安裝相依套件
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 執行建置（這會觸發你的 SPA 模式建置）
+      - name: Build project
+        run: npm run build
+
+      # 5. 設定 GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # 6. 把產出的靜態檔案 (build/client) 打包上傳
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./build/client"
+
+      # 7. 正式部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
